@@ -3,16 +3,24 @@
   "version": "1.0.0",
   "description": "Chatting system ",
   "type": "module",
-  "main": "server/index.js",
+  "main": "server/src/index.js",
   "scripts": {
     "start": "node server/index.js",
     "client": "cd client && npm run dev",
-    "server": "cd server && npm start",
+    "server": "nodemon server/src/index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\""
   },
   "author": "tamirat kebede",
   "license": "ISC",
   "dependencies": {
-    "concurrently": "^9.1.2"
+    "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.6.0",
+    "concurrently": "^9.1.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.2",
+    "socket.io": "^4.8.1"
   }
 }
