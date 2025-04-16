@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/auth.route.js";
+import messageRoutes from "./routes/message.route.js"
+import userRoutes from "./routes/user.route.js"
 
 import connectDB from "./config/db.js";
 
@@ -21,6 +23,11 @@ app.use(cookieParser());
 
 // auth routes 
 app.use("/api/v1/auth", authRoutes);
+// message routes
+app.use("/api/v1/message", messageRoutes);
+
+// user routes 
+app.use("/api/v1/users", userRoutes)
 
 
 
