@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+
+import cloudinary from "../lib/cloudinary.js";
 import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
@@ -57,7 +59,6 @@ export const signup =async(req, res, next)=>{
 
 
 
-
 export const login = async(req, res, next)=>{
     try {
         const {email, password} = req.body;
@@ -107,6 +108,62 @@ export const logout = async(req, res, next)=>{
         }).status(200).json({
             success: true,
             message: "User logged out successfully",
+        })
+        
+    } catch (error) {
+        next(new AppError(error.message|| "internal server error!", 500))
+        
+    }
+}
+export const updateProfile = async(req, res, next)=>{
+    try {
+        const {profilePic} = req.body;
+
+        // chec if profilePic is provided
+        if(!profilePic){
+            return next(new AppError("Please provide all fields", 400))
+        }
+        // check if user exists
+        const userExists = await User.findById(req.user._id);
+        // check if user won't exist
+        if(!userExists){
+            return next(new AppError("User not found", 400))
+        }
+        const uploadResponse =  await cloudinary.uploader.upload(profilePic)
+
+
+        // update user
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, {
+            profilePic: uploadResponse.secure_url || userExists.profilePic,
+        }, {new: true});
+        // exclude password from user object
+        const { password:excludedPassword, ...userInfo } = updatedUser._doc;
+        // send token in cookie
+        res.status(200).json({
+            success: true,
+            message: "User updated successfully",
+            ...userInfo,
+        })
+        
+    } catch (error) {
+        next(new AppError(error.message|| "internal server error!", 500))
+        
+    }
+}
+export const checkAuth = async(req, res, next)=>{
+    try {
+        // check if user exists
+        const userExists = req.user;
+        // check if user won't exist
+        if(!userExists){
+            return next(new AppError("User not found", 400))
+        }
+        // exclude password from user object
+        // send token in cookie
+        res.status(200).json({
+            success: true,
+            message: "Auth is made successfully",
+            ...userExists._doc,
         })
         
     } catch (error) {
