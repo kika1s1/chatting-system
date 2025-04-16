@@ -5,13 +5,13 @@ export const getMessages = async (req, res, next) => {
         // user to chat id
         const { id:userToChatId } = req.params;
         // my id is in the token
-        const myId = req.user._id;
+        const myId =  req.user._id;
         const messages = await Message.find({
-            $or: [
-                { sender: myId, receiver: userToChatId },
-                { sender: userToChatId, receiver: myId },
-            ],
-        }).sort({ createdAt: 1 });
+            $or:[
+                { senderId: myId, receiverId: userToChatId },
+                { senderId: userToChatId, receiverId: myId },
+            ]
+        });
                 
 
         return res.status(200).json({
