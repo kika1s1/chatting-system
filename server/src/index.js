@@ -3,6 +3,11 @@ import dotenv from "dotenv";
 
 import authRoutes from "./routes/auth.route.js";
 
+import connectDB from "./config/db.js";
+
+import errorHandler from "./lib/errorHandler.js";
+import AppError from "./lib/AppError.js";
+
 dotenv.config();
 
 const app = express();
@@ -14,6 +19,21 @@ app.use(express.json());
 // auth routes 
 app.use("/api/v1/auth", authRoutes);
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+
+
+// error handling middleware
+app.use(AppError);
+app.use(errorHandler);
+
+// connect to db and start server
+try {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+  
+} catch (error) {
+  console.error("MongoDB connection error:", error.message);
+  process.exit(1);
+  
+}
