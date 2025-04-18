@@ -1,3 +1,4 @@
+import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 
 export const getMessages = async (req, res, next) => {
@@ -14,9 +15,7 @@ export const getMessages = async (req, res, next) => {
         });
                 
 
-        return res.status(200).json({
-            messages,
-        });
+        return res.status(200).json(messages);
 
 
         
@@ -34,9 +33,7 @@ export const sendMessage = async (req, res, next) => {
         const { text, image } = req.body;
         let imageUrl;
         if(image){
-            const uploadResponse = await cloudinary.uploader.upload(image, {
-                folder: "messages",
-            });
+            const uploadResponse = await cloudinary.uploader.upload(image);
             imageUrl = uploadResponse.secure_url;
         }
         // check if message is provided
@@ -50,11 +47,10 @@ export const sendMessage = async (req, res, next) => {
         // todo: real time functionality with socket.io
                 
 
-        return res.status(200).json({
-            newMessage,
-        });
+        return res.status(200).json(newMessage);
         
     } catch (error) {
+        console.log(error);
         next(new AppError("Internal server error", 500));
         
     }

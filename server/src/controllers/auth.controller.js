@@ -117,10 +117,6 @@ export const updateProfile = async(req, res, next)=>{
     try {
         const {profilePic} = req.body;
 
-        // chec if profilePic is provided
-        if(!profilePic){
-            return next(new AppError("Please provide all fields", 400))
-        }
         // check if user exists
         const userExists = await User.findById(req.user._id);
         // check if user won't exist

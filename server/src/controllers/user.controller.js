@@ -7,9 +7,7 @@ export const getAllUsers = async(req, res, next)=>{
         if(!users){
             return next(new AppError("Users not found", 400))
         }
-        return res.status(200).json({
-            ...users,
-        })
+        return res.status(200).json(users);
 
         
     } catch (error) {
