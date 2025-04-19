@@ -8,7 +8,9 @@
     "start": "node server/index.js",
     "client": "cd client && npm run dev",
     "server": "nodemon server/src/index.js",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "import:data": "node server/seeds/user.seed.js"
+  
   },
   "author": "tamirat kebede",
   "license": "ISC",

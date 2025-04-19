@@ -12,9 +12,9 @@ import connectDB from "./config/db.js";
 import errorHandler from "./lib/errorHandler.js";
 import AppError from "./lib/AppError.js";
 
+import { server, app, io } from "./lib/socket.js";
 dotenv.config();
 
-const app = express();
 const PORT = process.env.PORT || 3000;
 
 // middleware
@@ -46,7 +46,7 @@ app.use(errorHandler);
 // connect to db and start server
 try {
   await connectDB();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
   
