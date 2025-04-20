@@ -1,6 +1,6 @@
 import { Router } from "express";
 import protectedRoute from "../middleware/auth.middleware.js";
-import { getMessages, sendMessage } from "../controllers/message.controller.js";
+import { getMessages, sendMessage, deleteMessage, updateMessage} from "../controllers/message.controller.js";
 
 const router = Router()
 // get all messages between two users
@@ -8,6 +8,12 @@ router.get("/:id",protectedRoute, getMessages)
 
 // send message
 router.post("/send/:id",protectedRoute, sendMessage)
+
+// delete message
+router.delete("/:id",protectedRoute, deleteMessage)
+
+// update message
+router.put("/:id",protectedRoute, updateMessage)
 
 
 

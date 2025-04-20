@@ -40,7 +40,31 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
       set({ messages: [...messages, res.data] });
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || error.message);
+    }
+  },
+
+  updateMessage: async (id, updateData) => {
+    const { messages } = get();
+    try {
+      const res = await axiosInstance.put(`/messages/${id}`, updateData);
+      set({
+        messages: messages.map(m =>
+          m._id === id ? res.data : m
+        )
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  },
+
+  deleteMessage: async (id) => {
+    const { messages } = get();
+    try {
+      await axiosInstance.delete(`/messages/${id}`);
+      set({ messages: messages.filter(m => m._id !== id) });
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
   },
 
@@ -51,11 +75,24 @@ export const useChatStore = create((set, get) => ({
     const socket = useAuthStore.getState().socket;
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
-
+      const isFromSelected = newMessage.senderId === selectedUser._id;
+      if (!isFromSelected) return;
       set({
         messages: [...get().messages, newMessage],
+      });
+    });
+
+    socket.on("messageDeleted", ({ id }) => {
+      set({
+        messages: get().messages.filter((m) => m._id !== id),
+      });
+    });
+
+    socket.on("messageUpdated", (updated) => {
+      set({
+        messages: get().messages.map((m) =>
+          m._id === updated._id ? updated : m
+        ),
       });
     });
   },
@@ -63,6 +100,8 @@ export const useChatStore = create((set, get) => ({
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     socket.off("newMessage");
+    socket.off("messageDeleted");
+    socket.off("messageUpdated");
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),
