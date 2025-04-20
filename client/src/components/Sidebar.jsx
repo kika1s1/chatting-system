@@ -72,9 +72,9 @@ const Sidebar = () => {
                   alt={user.fullName}
                   className="size-11 rounded-full object-cover"
                 />
-                {isOnline && (
+                {isOnline ? (
                   <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-white" />
-                )}
+                ): (<span className="absolute bottom-0 right-0 size-3 bg-zinc-400 rounded-full ring-2 ring-white" />)}
               </div>
 
               {/* Name + Status (on lg) */}
@@ -87,6 +87,7 @@ const Sidebar = () => {
                     isOnline ? "text-green-500" : "text-zinc-400"
                   }`}
                 >
+                  
                   {isOnline ? "Online" : "Offline"}
                 </div>
               </div>
