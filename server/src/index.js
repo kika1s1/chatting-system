@@ -57,8 +57,6 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // ─── ERROR HANDLING ────────────────────────────────────────────────────────────
-// AppError is your custom error‑throwing middleware
-app.use(AppError);
 // errorHandler sends proper responses
 app.use(errorHandler);
 

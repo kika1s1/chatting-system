@@ -14,12 +14,7 @@ export const getMessages = async (req, res, next) => {
                 { senderId: userToChatId, receiverId: myId },
             ]
         });
-                
-
         return res.status(200).json(messages);
-
-
-        
     } catch (error) {
         next(new AppError("Internal server error", 500));
         

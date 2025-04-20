@@ -13,14 +13,21 @@ const ChatHeader = () => {
           {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic } alt={selectedUser.fullName} />
+              <img src={selectedUser.profilePic} alt={selectedUser.fullName} />
             </div>
           </div>
 
           {/* User info */}
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
-            <p className="text-sm text-base-content/70">
+            <p className="flex items-center gap-2 text-sm text-base-content/70">
+              <span
+                className={`w-2.5 h-2.5 rounded-full ${
+                  onlineUsers.includes(selectedUser._id)
+                    ? "bg-green-500"
+                    : "bg-zinc-400"
+                }`}
+              />
               {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
             </p>
           </div>

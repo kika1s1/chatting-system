@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import {io} from "socket.io-client"
 import toast from "react-hot-toast";
-const baseURL =  "/";
+const baseURL =  import.meta.env.VITE_NODE_ENV == "development" ? import.meta.env.VITE_SERVER_URL : "/"
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   onlineUsers: [],
@@ -23,7 +23,7 @@ export const useAuthStore = create((set, get) => ({
         set({ isCheckingAuth: false });
       }
     } catch (error) {
-      console.log("Error checking auth:", error.response.data.message);
+      console.error(error.response.data.message);
       // toast.error(error.response.data.message);
       set({ authUser: null, isCheckingAuth: false });
     } finally {
@@ -57,7 +57,7 @@ export const useAuthStore = create((set, get) => ({
 
       }
     } catch (error) {
-      console.error("Error logging in:", error);
+      console.error("Error logging in:", error.response.data.message);
       toast.error(error.response.data.message);
     } finally {
       set({ isLoggingIn: false });
