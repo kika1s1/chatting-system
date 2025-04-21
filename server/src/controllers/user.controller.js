@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import AppError from "../lib/AppError.js";
 
 export const getAllUsers = async(req, res, next)=>{
     try {
@@ -11,6 +12,7 @@ export const getAllUsers = async(req, res, next)=>{
 
         
     } catch (error) {
+        next(new AppError("Internal server error", 500));
         
     }
 }
