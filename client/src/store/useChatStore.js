@@ -67,6 +67,17 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response?.data?.message || error.message);
     }
   },
+  markMessagesAsSeen: async (senderId) => {
+    try {
+      await axiosInstance.patch(`/messages/seen/${senderId}`);
+      
+    } catch (error) {
+      console.log(error);
+      // toast.error(error.response?.data?.message || error.message);
+    }
+
+  },
+
 
   subscribeToMessages: () => {
     const { selectedUser } = get();
@@ -95,6 +106,18 @@ export const useChatStore = create((set, get) => ({
         ),
       });
     });
+    socket.on("messagesSeen", ({ senderId }) => {
+      set({
+        messages: get().messages.map((msg) =>
+          msg.senderId === senderId ? { ...msg, seen: true } : msg
+        ),
+      });
+      
+
+
+
+    });
+    
   },
 
   unsubscribeFromMessages: () => {
@@ -102,6 +125,9 @@ export const useChatStore = create((set, get) => ({
     socket.off("newMessage");
     socket.off("messageDeleted");
     socket.off("messageUpdated");
+    socket.off("messagesSeen");
+
+
   },
 
   setSelectedUser: (selectedUser) => set({ selectedUser }),

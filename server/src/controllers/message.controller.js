@@ -122,3 +122,28 @@ export const updateMessage = async (req, res, next) => {
     next(new AppError("Internal server error", 500));
   }
 };
+
+export const markMessagesAsSeen  = async (req, res, next) => {
+    try {
+        const { senderId } = req.params;
+        const myId = req.user._id;
+        const messages = await Message.updateMany(
+            { senderId, receiverId: myId },
+            { $set: { seen: true } }
+        );
+        // emit message seen
+        const recieverSockerId = getReceiverSocketId(senderId);
+        if (recieverSockerId) {
+            io.to(recieverSockerId).emit("messagesSeen", {
+                senderId,
+                receiverId: myId,
+            });
+        }
+
+
+        return res.status(200).json(messages);
+    } catch (error) {
+        next(new AppError("Internal server error", 500));
+        
+    }
+}

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import protectedRoute from "../middleware/auth.middleware.js";
-import { getMessages, sendMessage, deleteMessage, updateMessage} from "../controllers/message.controller.js";
+import { getMessages, sendMessage, deleteMessage, updateMessage, markMessagesAsSeen} from "../controllers/message.controller.js";
 
 const router = Router()
 // get all messages between two users
@@ -14,6 +14,11 @@ router.delete("/:id",protectedRoute, deleteMessage)
 
 // update message
 router.put("/:id",protectedRoute, updateMessage)
+
+// seen message
+router.patch("/seen/:senderId",protectedRoute, markMessagesAsSeen)
+
+
 
 
 

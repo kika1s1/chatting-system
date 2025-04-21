@@ -1,6 +1,7 @@
-import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
-import { useAuthStore } from "../store/useAuthStore";   // ensure socket is available
+import { FaCheck, FaCheckDouble } from "react-icons/fa";
+import { useChatStore } from "../store/useChatStore";
+import { useAuthStore } from "../store/useAuthStore"; // ensure socket is available
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
@@ -17,14 +18,32 @@ const ChatContainer = () => {
     deleteMessage,
     updateMessage,
     sendMessage,
+    markMessagesAsSeen
   } = useChatStore();
-  const { authUser, socket } = useAuthStore();       // add socket
+  const { authUser, socket } = useAuthStore(); // add socket
   const messageEndRef = useRef(null);
 
   // message being edited
   const [editingMsg, setEditingMsg] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
-  const [isTyping, setIsTyping] = useState(false);  // new
+  const [isTyping, setIsTyping] = useState(false); // new
+
+  // Mark messages as seen when the last message is from selectedUser
+  useEffect(() => {
+    const markSeen = async () => {
+      const lastMessage = messages[messages.length - 1];
+      if (
+        lastMessage &&
+        lastMessage.senderId === selectedUser._id &&
+        !lastMessage.seen
+      ) {
+        await markMessagesAsSeen(selectedUser._id);
+      }
+    };
+    if (selectedUser) {
+      markSeen();
+    }
+  }, [messages, selectedUser, markMessagesAsSeen]);
 
   useEffect(() => {
     if (selectedUser) {
@@ -75,10 +94,7 @@ const ChatContainer = () => {
         {messages.map((msg) => {
           const isMine = msg.senderId === authUser._id;
           return (
-            <div
-              key={msg._id}
-              className={`chat ${isMine ? "justify-end" : "justify-start"}`}
-            >
+            <div key={msg._id} className={`chat ${isMine ? "justify-end" : "justify-start"}`}>
               <div className="flex flex-col max-w-md">
                 <div className="flex items-center space-x-2 mb-1">
                   {isMine && (
@@ -117,7 +133,13 @@ const ChatContainer = () => {
                   )}
                 </div>
 
-                <div className={`p-3 rounded-lg ${isMine ? "bg-slate-200 text-slate-800 self-end" : "bg-slate-100 text-slate-800 self-start"}`}>          
+                <div
+                  className={`p-3 rounded-lg ${
+                    isMine
+                      ? "bg-slate-200 text-slate-800 self-end"
+                      : "bg-slate-100 text-slate-800 self-start"
+                  }`}
+                >
                   {msg.image && (
                     <img
                       src={msg.image}
@@ -134,6 +156,16 @@ const ChatContainer = () => {
                   <time className="text-xs text-gray-400">
                     {formatMessageTime(msg.createdAt)}
                   </time>
+
+                  {isMine && (
+                    <span className="ml-1">
+                      {msg.seen ? (
+                        <FaCheckDouble size={12} color="#0ea5e9" />
+                      ) : (
+                        <FaCheck size={12} />
+                      )}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
