@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { login, logout, signup, updateProfile, checkAuth } from "../controllers/auth.controller.js";
+import { login, logout, signup, updateProfile, checkAuth, google } from "../controllers/auth.controller.js";
 import protectedRoute from "../middleware/auth.middleware.js";
 
 const router = Router();
@@ -7,6 +7,8 @@ const router = Router();
 router.post("/signup", signup);
 
 router.post("/login", login);
+
+router.post("/google", google);
 
 router.post("/logout", logout);
 

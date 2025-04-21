@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import AuthImagePattern from "../components/AuthImagePattern";
 import { Link } from "react-router";
 import { Eye, EyeOff, Loader2, Lock, Mail, MessageSquare } from "lucide-react";
+import Oauth from "../components/Oauth";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -96,7 +97,9 @@ const Login = () => {
                 "Sign in"
               )}
             </button>
+            <Oauth/>
           </form>
+
 
           <div className="text-center">
             <p className="text-base-content/60">

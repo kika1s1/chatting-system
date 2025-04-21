@@ -5,6 +5,7 @@ import { Link } from "react-router";
 
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
+import Oauth from "../components/Oauth";
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -129,6 +130,7 @@ const SignUpPage = () => {
                 "Create Account"
               )}
             </button>
+            <Oauth/>
           </form>
 
           <div className="text-center">
