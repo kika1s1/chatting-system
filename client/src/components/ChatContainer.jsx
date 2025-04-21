@@ -1,9 +1,9 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
+import { useAuthStore } from "../store/useAuthStore";   // ensure socket is available
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
 import MessageSkeleton from "./skeletons/MessageSkeleton";
-import { useAuthStore } from "../store/useAuthStore";
 import { formatMessageTime } from "../lib/utils";
 
 const ChatContainer = () => {
@@ -18,12 +18,13 @@ const ChatContainer = () => {
     updateMessage,
     sendMessage,
   } = useChatStore();
-  const { authUser } = useAuthStore();
+  const { authUser, socket } = useAuthStore();       // add socket
   const messageEndRef = useRef(null);
 
   // message being edited
   const [editingMsg, setEditingMsg] = useState(null);
   const [menuOpenId, setMenuOpenId] = useState(null);
+  const [isTyping, setIsTyping] = useState(false);  // new
 
   useEffect(() => {
     if (selectedUser) {
@@ -36,6 +37,21 @@ const ChatContainer = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // typing indicator
+  useEffect(() => {
+    if (!socket || !selectedUser) return;
+    socket.on("typing", ({ senderId }) => {
+      if (senderId === selectedUser._id) setIsTyping(true);
+    });
+    socket.on("stopTyping", ({ senderId }) => {
+      if (senderId === selectedUser._id) setIsTyping(false);
+    });
+    return () => {
+      socket.off("typing");
+      socket.off("stopTyping");
+    };
+  }, [socket, selectedUser]);
 
   if (isMessagesLoading) {
     return (
@@ -101,7 +117,7 @@ const ChatContainer = () => {
                   )}
                 </div>
 
-                <div className={`p-3 rounded-lg ${isMine ? "bg-slate-100 text-slate-800 self-end" : "bg-slate-100 text-slate-800 self-start"}`}>          
+                <div className={`p-3 rounded-lg ${isMine ? "bg-slate-200 text-slate-800 self-end" : "bg-slate-100 text-slate-800 self-start"}`}>          
                   {msg.image && (
                     <img
                       src={msg.image}
@@ -125,6 +141,13 @@ const ChatContainer = () => {
         })}
         <div ref={messageEndRef} />
       </div>
+
+      {/* typing indicator */}
+      {isTyping && (
+        <div className="px-4 py-2 text-sm italic text-slate-500">
+          {selectedUser.fullName} is typing...
+        </div>
+      )}
 
       <MessageInput
         initialText={editingMsg ? editingMsg.text : ""}
