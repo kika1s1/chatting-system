@@ -1,72 +1,159 @@
-# Chatting System
+# Friends Chat App
 
-A simple chatting system built with Node.js, Express, MongoDB, and Socket.IO.
+A modern, real‑time one‑to‑one chat application built with Node.js, Express, MongoDB, Socket.IO and React.
 
 ## Features
 
-- Real-time messaging between users
-- User authentication and authorization
-- Profile management (name, email, profile picture)
-- Message history and status (seen, delivered)
-- Responsive design for mobile and desktop
+- 📩 Real‑time messaging  
+- ✏️ Send, edit & delete messages  
+- 👀 Read/seen receipts  
+- ⌨️ Typing indicators  
+- 🔐 JWT‑based authentication & Google OAuth  
+- 🌄 Profile management with avatar upload (Cloudinary)  
+- 🎨 Responsive UI with Tailwind CSS & DaisyUI  
+- ⚙️ Light / Dark theme switcher  
 
-## Technologies Used
+## Tech Stack
 
-- Node.js
-- Express
-- MongoDB (Mongoose)
-- Socket.IO
-- HTML/CSS (Tailwind CSS)
-- JavaScript (ES6+)
+- **Server:** Node.js, Express, Mongoose (MongoDB), Socket.IO  
+- **Client:** React, Vite, Zustand, Tailwind CSS, DaisyUI, Socket.IO‑client  
+- **Auth:** JWT (HTTP‑only cookies), Firebase Google OAuth  
+- **Storage:** Cloudinary for images  
+
+## Repository Structure
+
+```
+/  
+├─ server/  
+│  ├─ src/  
+│  │  ├─ controllers/     # REST & real‑time handlers  
+│  │  ├─ models/          # Mongoose schemas  
+│  │  ├─ routes/          # Express routers  
+│  │  ├─ middleware/      # Authentication & error handling  
+│  │  ├─ lib/             # Socket setup, Cloudinary, AppError, utilities  
+│  │  └─ config/          # Database & environment configuration  
+│  └─ index.js            # Server entry point + static file serving  
+└─ client/  
+   ├─ src/  
+   │  ├─ components/      # UI: ChatContainer, MessageInput, Sidebar…  
+   │  ├─ pages/           # Views: Login, Signup, Profile, Settings  
+   │  ├─ store/           # Zustand stores (auth & chat)  
+   │  ├─ lib/             # Axios instance, helper functions  
+   │  └─ main.jsx         # React application entry  
+   ├─ tailwind.config.js  
+   └─ vite.config.js  
+```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js installed
-- MongoDB installed and running locally or a remote MongoDB URI
+- Node.js 18+  
+- MongoDB (local or Atlas)  
+- Cloudinary account  
+- Firebase project for Google OAuth  
 
-### Installation
+### Environment Variables
 
-1. Clone the repository:
+At the project root, create a `.env` file:
 
-   ```bash
-   git clone https://github.com/kika1s1/chatting_system.git
-   cd chatting_system
-   ```
-2. Install dependencies:
-   ```bash 
-   npm install
-    ```
-3. Set environment variables:
-   Create a .env file in the root directory with the following:
-   ```bash
-   PORT=3000 
-   MONGODB_URI=mongodb://localhost:27017/chatting-system 
-   ```
-4 Replace mongodb://localhost:27017/chatting-system with your MongoDB URI.
+```bash
+# Server
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/chatting-system
+JWT_SECRET=<your_jwt_secret>
+CLIENT_URL=http://localhost:5173
 
-5. Start the server:
-   ```bash
-   npm start
-   ```
-6. Open your browser and go to http://localhost:3000 to see the application.
-
-Usage
-- Register a new account or login withexisting credentials.
-Start a new chat or join an existing chat room.
-
-- Send messages in real-time and see message status (delivered, seen).
-Update your profile details and profile picture.
-## API Endpoints
+CLOUDINARY_CLOUD_NAME=<your_cloud_name>
+CLOUDINARY_API_KEY=<your_api_key>
+CLOUDINARY_API_SECRET=<your_api_secret>
 ```
-/api/users/register - Register a new user
-/api/users/login - Login a user
-/api/users/logout - Logout a user
-/api/users/profile - Get logged-in user profile
-/api/messages - Get all messages or send a new message
-/api/chats - Get all chats or create a new chat room
-```
-#### Contributing
-Contributions are welcome! Please fork the repository and submit a pull request with your changes.
 
+In `client/.env`:
+
+```bash
+VITE_API_URL=http://localhost:3000/api/v1
+VITE_FIREBASE_API_KEY=<your_firebase_api_key>
+```
+
+### Installation & Run
+
+```bash
+# Install dependencies
+npm install
+cd client
+npm install
+cd ..
+
+# Start server (runs on PORT)
+npm run server
+
+# Start client (Vite dev server)
+npm run client
+
+# Or run both concurrently
+npm run dev
+```
+
+Open your browser at `http://localhost:5173`.
+
+For production build:
+
+```bash
+npm run build      # Builds client
+npm start          # Serves API and static client files
+```
+
+## API Reference
+
+Base URL: `/api/v1`
+
+### Authentication
+
+- `POST /auth/register`  — Register a new user  
+- `POST /auth/login`     — Log in  
+- `POST /auth/google`    — Google OAuth  
+- `POST /auth/logout`    — Log out  
+- `GET  /auth/me`        — Get current user profile  
+
+### Users
+
+- `GET /users`           — List all users (excluding yourself)  
+
+### Messages
+
+- `GET    /messages/:id`        — Get conversation with user `:id`  
+- `POST   /messages/send/:id`   — Send a message to `:id`  
+- `PUT    /messages/:messageId`  — Edit a message  
+- `DELETE /messages/:messageId`  — Delete a message  
+- `PATCH  /messages/seen/:senderId` — Mark messages as seen  
+
+## Socket.IO Events
+
+- Client → Server:  
+  - `typing`, `stopTyping`  
+- Server → Client:  
+  - `newMessage`, `messageDeleted`, `messageUpdated`, `messagesSeen`  
+  - `typing`, `stopTyping`  
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork this repository.  
+2. Create a feature branch:
+   ```bash
+   git checkout -b feat/<feature-name>
+   ```
+3. Install dependencies and run the application locally.  
+4. Run linting and tests:
+   ```bash
+   npm run lint
+   npm run test
+   ```
+5. Commit your changes and push to your fork.  
+6. Open a Pull Request describing your changes.  
+
+---
+
+MIT © 2025 Kika
