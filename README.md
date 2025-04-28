@@ -1,26 +1,61 @@
 # Friends Chat App
 
-A modern, real‑time one‑to‑one chat application built with Node.js, Express, MongoDB, Socket.IO and React.
+A modern, real‑time one‑to‑one chat application with full CRUD on messages, typing indicators, read receipts, user profiles, theming—and secure authentication.
 
-## Features
+---
 
-- 📩 Real‑time messaging  
-- ✏️ Send, edit & delete messages  
-- 👀 Read/seen receipts  
-- ⌨️ Typing indicators  
-- 🔐 JWT‑based authentication & Google OAuth  
-- 🌄 Profile management with avatar upload (Cloudinary)  
-- 🎨 Responsive UI with Tailwind CSS & DaisyUI  
-- ⚙️ Light / Dark theme switcher  
+## 🚀 Features
 
-## Tech Stack
+- **Real‑time Chat**  
+  – One‑to‑one messaging via Socket.IO  
+  – Typing indicators (`typing`/`stopTyping` events)  
+  – Read/seen receipts  
 
-- **Server:** Node.js, Express, Mongoose (MongoDB), Socket.IO  
-- **Client:** React, Vite, Zustand, Tailwind CSS, DaisyUI, Socket.IO‑client  
-- **Auth:** JWT (HTTP‑only cookies), Firebase Google OAuth  
-- **Storage:** Cloudinary for images  
+- **Message Management**  
+  – Send text & image messages  
+  – Edit & delete your own messages  
+  – “Edited” badge when a message is updated  
+  – Auto‑scroll to newest message  
 
-## Repository Structure
+- **User Management**  
+  – JWT‑based signup/login & Google OAuth (Firebase)  
+  – HTTP‑only cookie storage of tokens  
+  – Profile page: update avatar (Cloudinary)  
+  – “Forget password” & secure reset flow (email + token)  
+
+- **Contacts Sidebar**  
+  – List all users (`GET /api/v1/users`)  
+  – Online/offline status via Socket.IO presence  
+  – “Show online only” toggle  
+
+- **UI & Theming**  
+  – Responsive React + Vite SPA  
+  – Tailwind CSS + DaisyUI components  
+  – Light/dark & 30+ DaisyUI themes via Zustand store  
+
+- **Robust Backend**  
+  – Node.js + Express 5 + Mongoose (MongoDB)  
+  – Modular controllers & middleware (auth, error‑handler)  
+  – REST API for messages & users  
+  – Socket.IO server for real‑time events  
+  – Cloudinary integration for image uploads  
+
+---
+
+## 🛠 Tech Stack
+
+| Layer      | Technology                                    |
+| ---------- | --------------------------------------------- |
+| Server     | Node.js, Express, Mongoose (MongoDB), Socket.IO |
+| Client     | React, Vite, Zustand, Tailwind CSS, DaisyUI, Socket.IO‑client |
+| Auth       | JWT (httpOnly cookies), Firebase Google OAuth |
+| Storage    | Cloudinary for images                        |
+| Email      | Nodemailer (Gmail SMTP)                      |
+| Testing & Linting | ESLint, Prettier, React Testing Library (optional) |
+
+---
+
+## 📁 Repository Structure
 
 ```
 /  
@@ -52,21 +87,25 @@ A modern, real‑time one‑to‑one chat application built with Node.js, Expres
 - MongoDB (local or Atlas)  
 - Cloudinary account  
 - Firebase project for Google OAuth  
+- Gmail account (for password‑reset emails)
 
 ### Environment Variables
 
-At the project root, create a `.env` file:
+Create a `.env` in project root:
 
 ```bash
 # Server
-PORT=3000
-MONGO_URI=mongodb://localhost:27017/chatting-system
+PORT=5000
+MONGO_URI=<mongo‑connection‑string>
 JWT_SECRET=<your_jwt_secret>
 CLIENT_URL=http://localhost:5173
 
-CLOUDINARY_CLOUD_NAME=<your_cloud_name>
-CLOUDINARY_API_KEY=<your_api_key>
-CLOUDINARY_API_SECRET=<your_api_secret>
+CLOUDINARY_CLOUD_NAME=<cloud_name>
+CLOUDINARY_API_KEY=<api_key>
+CLOUDINARY_API_SECRET=<api_secret>
+
+EMAIL_USER=<gmail_address>
+EMAIL_PASS=<gmail_app_password>
 ```
 
 In `client/.env`:
