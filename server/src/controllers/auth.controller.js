@@ -5,6 +5,7 @@ import cloudinary from "../lib/cloudinary.js";
 import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
+import UsedToken from "../models/token.model.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -36,7 +37,7 @@ export const signup = async (req, res, next) => {
     // save user to db
     await user.save();
     // generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, "1h");
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = user._doc;
     // send token in cookie
@@ -77,7 +78,7 @@ export const login = async (req, res, next) => {
       return next(new AppError("Wrong email or password", 400));
     }
     // generate token
-    const token = generateToken(userExists._id);
+    const token = generateToken(userExists._id, "1h");
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = userExists._doc;
     // send token in cookie
@@ -105,7 +106,7 @@ export const google = async (req, res, next) => {
     let user = await User.findOne({ email });
     if (user) {
       // generate token
-      const token = generateToken(user._id);
+      const token = generateToken(user._id, "1h");
       const { password: pwd, ...userInfo } = user._doc;
       return res
         .cookie("token", token, {
@@ -137,7 +138,7 @@ export const google = async (req, res, next) => {
     });
     await user.save();
     // generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, "1h");
     
     const { password: pwd, ...userInfo } = user._doc;
     return res
@@ -240,7 +241,10 @@ export const forget = async (req, res, next) => {
     }
 
     // generate token
-    const token = generateToken(userExists._id, "5m");
+    const token = generateToken(userExists._id, "2m");
+    // add token to db
+    const usedToken = new UsedToken({ token });
+    await usedToken.save();
     const baseUrl = "https://chatting-system-fvfc.onrender.com"
     const resetLink = process.env.NODE_ENV === "production" ? `${baseUrl}/reset/${token}` : `http://localhost:5173/reset/${token}`;
 
@@ -286,15 +290,23 @@ export const reset = async (req, res, next) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
-    console.log(token, password);
     // check if token is valid
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     if (!decoded) {
       return next(new AppError("Invalid token", 400));
     }
+    // check if token is used
+    const usedToken = await UsedToken.findOne({ token });
+    if (!usedToken) {
+      return next(new AppError("Token is not valid", 400));
+    }
+    if (!usedToken) {
+      return next(new AppError("Token is not valid", 400));
+    }
+    
+    
 
     // check if user exists
-    console.log(decoded);
     const userExists = await User.findById(decoded.userId);
     // check if user won't exist
     if (!userExists) {
@@ -314,8 +326,11 @@ export const reset = async (req, res, next) => {
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = updatedInfo._doc;
     // generate token
-    const newToken = generateToken(userExists._id);
+    const newToken = generateToken(userExists._id, "1h");
+    // delete used token
+    await UsedToken.findByIdAndDelete(usedToken._id);
     // send token in cookie
+
     res
       .cookie("token", newToken, {
         httpOnly: true,
