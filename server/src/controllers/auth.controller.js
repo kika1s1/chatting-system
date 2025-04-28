@@ -241,11 +241,8 @@ export const forget = async (req, res, next) => {
 
     // generate token
     const token = generateToken(userExists._id, "5m");
-    let resetLink;
-    const baseUrl = "https://chatting-system-3t8e.onrender.com"
-    resetLink = `${baseUrl}/reset/${token}`;
-    
-    resetLink = process.env.NODE_ENV === "production" ? resetLink : `http://localhost:5173/reset/${token}`;
+    const baseUrl = "https://chatting-system-fvfc.onrender.com"
+    const resetLink = process.env.NODE_ENV === "production" ? `${baseUrl}/reset/${token}` : `http://localhost:5173/reset/${token}`;
 
     // setup transporter
     const transporter = nodemailer.createTransport({
