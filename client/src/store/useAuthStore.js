@@ -7,6 +7,8 @@ export const useAuthStore = create((set, get) => ({
   authUser: null,
   onlineUsers: [],
   isSigningUp: false,
+  isForgetting: false,
+  isResetting: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   socket: null,
@@ -87,6 +89,38 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       toast.error(error.response.data.message);
       console.error("Error logging out:", error);
+    }
+  },
+  forget: async (email) => {
+    set({ isForgetting: true });
+    try {
+      const res = await axiosInstance.post("/auth/forget", { email });
+      if (res.status === 200) {
+        toast.success("Check your email for the reset link!");
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error("Error resetting password:", error);
+    } finally {
+      set({ isForgetting: false });
+    }
+  },
+  reset: async (data) => {
+    set({ isResetting: true });
+    try {
+      const res = await axiosInstance.post(`/auth/reset/${data.token}`, {
+        password: data.password,
+      });
+      if (res.status === 200) {
+        toast.success("Password reset successfully!");
+        set({ authUser: res.data });
+        get().connectSocket()
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error("Error resetting password:", error);
+    } finally {
+      set({ isResetting: false });
     }
   },
   updateProfile : async (data) => {

@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import { useThemeStore } from "./store/useThemeStore";
 import { useAuthStore } from "./store/useAuthStore";
 import { Toaster } from "react-hot-toast";
+import Reset from "./pages/Reset";
+import Forget from "./pages/Forget";
 const App = () => {
   const {authUser, checkAuth, isCheckingAuth} = useAuthStore();
   const { theme } = useThemeStore();
@@ -33,6 +35,8 @@ const App = () => {
         <Route path="/login" element={!authUser ? <Login/> : <Navigate to="/" />}  />
         <Route path="/profile" element={authUser ? <Profile/> : <Navigate to="/login" />}  />
         <Route path="/settings" element={<Settings/>}  />
+        <Route path="/forget-password" element={!authUser ? <Forget/>:<Navigate to="/"/>}  />
+        <Route path="/reset/:token" element={!authUser ? <Reset/>:<Navigate to="/"/>}  />
       </Routes>
       <Toaster />
     </div>
