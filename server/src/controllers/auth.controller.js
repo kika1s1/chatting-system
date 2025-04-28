@@ -232,7 +232,6 @@ export const checkAuth = async (req, res, next) => {
 export const forget = async (req, res, next) => {
   try {
     const { email } = req.body;
-    console.log(email);
 
     // check if user exists
     const userExists = await User.findOne({ email });
