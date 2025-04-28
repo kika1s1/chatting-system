@@ -243,19 +243,10 @@ export const forget = async (req, res, next) => {
     // generate token
     const token = generateToken(userExists._id, "5m");
     let resetLink;
-    if (process.env.NODE_ENV === "production") {
-      const protocol = req.protocol; // http or https
-      const host = req.get('host');  // localhost:5000 or yourdomain.com
-
-      const baseUrl = `${protocol}://${host}`;
-
-      resetLink = `${baseUrl}/reset/${token}`;
-    }
-    else{
-      // reset link
-    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const baseUrl = "https://chatting-system-3t8e.onrender.com"
     resetLink = `${baseUrl}/reset/${token}`;
-    }
+    
+    resetLink = process.env.NODE_ENV === "production" ? resetLink : `http://localhost:5173/reset/${token}`;
 
     // setup transporter
     const transporter = nodemailer.createTransport({
