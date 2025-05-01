@@ -12,6 +12,7 @@ export const useAuthStore = create((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   socket: null,
+  user:null,
 
   isCheckingAuth: true,
 
@@ -167,6 +168,18 @@ export const useAuthStore = create((set, get) => ({
       get().socket.disconnect();
       console.log("Socket disconnected");
 
+    }
+  },
+  getUser: async (id) => {
+    try {
+      const res = await axiosInstance.get(`/users/${id}`);
+
+      if (res.status === 200) {
+        set({ user: res.data });
+      }
+    } catch (error) {
+      toast.error(error.response.data.message);
+      console.error("Error getting user:", error);
     }
   },
 }));

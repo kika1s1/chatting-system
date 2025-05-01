@@ -84,3 +84,16 @@ export const getAllUsers = async (req, res, next) => {
         
 //     }
 // }
+
+export const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password -__v");
+    // check if user exists
+    if (!user) {
+      return next(new AppError("User not found", 400));
+    }
+    return res.status(200).json(user);
+  } catch (error) {
+    next(new AppError("Internal server error", 500));
+  }
+}
