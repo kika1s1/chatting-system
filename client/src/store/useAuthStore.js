@@ -60,8 +60,14 @@ export const useAuthStore = create((set, get) => ({
 
       }
     } catch (error) {
+      if(error.response.status === 429) {
+        toast.error(error.response.data);
+        return;
+      }
       console.error("Error logging in:", error.response.data.message);
       toast.error(error.response.data.message);
+      // check for rate limit error
+      
     } finally {
       set({ isLoggingIn: false });
     }

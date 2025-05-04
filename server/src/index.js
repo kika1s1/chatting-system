@@ -13,7 +13,6 @@ import userRoutes from "./routes/user.route.js";
 import connectDB from "./config/db.js";
 
 import errorHandler from "./lib/errorHandler.js";
-import AppError from "./lib/AppError.js";
 
 import { server, app, io } from "./lib/socket.js";
 
@@ -59,6 +58,7 @@ if (process.env.NODE_ENV === "production") {
 // ─── ERROR HANDLING ────────────────────────────────────────────────────────────
 // errorHandler sends proper responses
 app.use(errorHandler);
+
 
 // ─── CONNECT DATABASE & START SERVER ────────────────────────────────────────────
 try {

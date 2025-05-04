@@ -1,4 +1,5 @@
 import { Router } from "express";
+import loginLimiter from "../lib/rate-limiter.js";
 import { login, logout, signup, updateProfile, checkAuth, google, forget, reset } from "../controllers/auth.controller.js";
 import protectedRoute from "../middleware/auth.middleware.js";
 
@@ -6,7 +7,7 @@ const router = Router();
 
 router.post("/signup", signup);
 
-router.post("/login", login);
+router.post("/login",loginLimiter, login);
 
 router.post("/google", google);
 
