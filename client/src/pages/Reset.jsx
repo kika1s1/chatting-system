@@ -7,6 +7,8 @@ import { useParams } from "react-router";
 const Reset = () => {
     const {token} = useParams()
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const [formData, setFormData] = useState({
     password: "",
     confirm: "",
@@ -83,7 +85,7 @@ const Reset = () => {
                   <Lock className="h-5 w-5 text-base-content/40" />
                 </div>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showConfirm ? "text" : "password"}
                   className={`input input-bordered w-full pl-10`}
                   placeholder="••••••••"
                   value={formData.confirm}
@@ -92,7 +94,7 @@ const Reset = () => {
                 <button
                   type="button"
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => setShowConfirm(!showConfirm)}
                 >
                   {showPassword ? (
                     <EyeOff className="h-5 w-5 text-base-content/40" />
