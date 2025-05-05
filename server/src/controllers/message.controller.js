@@ -54,7 +54,8 @@ export const sendMessage = async (req, res, next) => {
         
     } catch (error) {
         console.log(error);
-        next(new AppError("Internal server error", 500));
+        next(error);
+        // next(new AppError("Internal server error", 500));
         
     }
 }
