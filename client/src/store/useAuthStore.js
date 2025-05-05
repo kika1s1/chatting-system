@@ -87,6 +87,22 @@ export const useAuthStore = create((set, get) => ({
       set({ isLoggingIn: false });
     }
   },
+  verifyEmail: async (id) => {
+    try {
+      const res = await axiosInstance.get(`/auth/verify-email/${id}`);
+      if (res.status === 200) {
+        toast.success("Email verified successfully!");
+
+        set({ authUser: res.data });
+        get().connectSocket()
+
+
+      }
+    } catch (error) {
+      console.error("Error verifying email:", error.response.data.message);
+      toast.error(error.response.data.message);
+    }
+  },
   logout: async () => {
     try {
       const res = await axiosInstance.post("/auth/logout");
