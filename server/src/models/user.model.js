@@ -83,6 +83,7 @@ const userSchema = new mongoose.Schema({
   },
   lastSeen: {
     type: Date,
+    default: Date.now,
   },
   bio: {
     type: String,

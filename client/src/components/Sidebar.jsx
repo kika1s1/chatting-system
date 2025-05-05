@@ -3,6 +3,7 @@ import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from "lucide-react";
+import getLastSeen from "../lib/lastSeen";
 
 const Sidebar = () => {
   const {
@@ -87,8 +88,8 @@ const Sidebar = () => {
                     isOnline ? "text-green-500" : "text-zinc-400"
                   }`}
                 >
-                  
-                  {isOnline ? "Online" : "Offline"}
+                  {console.log(user)}
+                  {getLastSeen(user)}
                 </div>
               </div>
             </button>

@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { Link } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import getLastSeen from "../lib/lastSeen";
 
 const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore();
@@ -34,7 +35,7 @@ const ChatHeader = () => {
                       : "bg-zinc-400"
                   }`}
                 />
-                {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+                {getLastSeen(selectedUser)}
               </p>
             </div>
         </div>
