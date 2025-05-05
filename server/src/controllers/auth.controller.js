@@ -1,11 +1,9 @@
 import nodemailer from "nodemailer";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import cloudinary from "../lib/cloudinary.js";
 import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
-import UsedToken from "../models/token.model.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -36,6 +34,38 @@ export const signup = async (req, res, next) => {
     });
     // save user to db
     await user.save();
+    // verify email 
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,  // Your Gmail address
+        pass: process.env.EMAIL_PASS,  // Your Gmail app password
+      },
+    });
+    const baseUrl = "https://chatting-system-fvfc.onrender.com";
+    const verifyLink = process.env.NODE_ENV === "production" 
+
+      ? `${baseUrl}/verify/${user._id}`
+      : `http://localhost:5173/verify-email/${user._id}`;
+    const mailOptions = {
+      from: 'Friends App',
+      to: email,
+      subject: "Verify Your Email",
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;"></div>
+          <h2 style="color: #333;">Verify Your Email</h2>
+          <p style="font-size: 16px;">Thank you for signing up! Please click the button below to verify your email address:</p>
+          <a href="${verifyLink}" style="display: inline-block; margin: 20px 0; padding: 12px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Email</a>
+          <p style="font-size: 14px; color: #777;">If you didn't sign up, just ignore this email.</p>
+          <p style="font-size: 14px; color: #777;">This link will expire in 1 hour.</p>
+        </div>
+      `,
+    };
+    // Send verification email
+    await transporter.sendMail(mailOptions);
+    // send verification email
+    
+    
     // generate token
     const token = generateToken(user._id, "1h");
     // exclude password from user object
@@ -82,6 +112,7 @@ export const login = async (req, res, next) => {
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = userExists._doc;
     // send token in cookie
+    console.log(userInfo)
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -159,6 +190,46 @@ export const google = async (req, res, next) => {
   }
 };
 
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    // check if user exists
+    const userExists = await User.findById(id);
+    // check if user won't exist
+    if (!userExists) {
+      return next(new AppError("User not found", 400));
+    }
+    // check if user is already verified
+    if (userExists.isVerified) {
+      return next(new AppError("User is already verified", 400));
+    }
+    // verify user
+    userExists.isVerified = true;
+    await userExists.save();
+    // exclude password from user object
+    const { password: excludedPassword, ...userInfo } = userExists._doc;
+    // send token in cookie
+    const token = generateToken(userExists._id, "1h");
+    console.log(userExists)
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        samesite: "strict",
+      })
+      .status(200)
+      .json({
+        success: true,
+        message: "User verified successfully",
+        ...userInfo,
+      });
+  } catch (error) {
+    next(new AppError(error.message || "internal server error!", 500));
+  }
+};
+
+
 export const logout = async (req, res, next) => {
   try {
     res
@@ -229,37 +300,41 @@ export const checkAuth = async (req, res, next) => {
   }
 };
 
-
 export const forget = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    // check if user exists
+    // Check if user exists
     const userExists = await User.findOne({ email });
     if (!userExists) {
       return next(new AppError("User not found", 400));
     }
 
-    // generate token
+    // Generate token for password reset (valid for 2 minutes)
     const token = generateToken(userExists._id, "2m");
-    // add token to db
-    const usedToken = new UsedToken({ token });
-    await usedToken.save();
-    const baseUrl = "https://chatting-system-fvfc.onrender.com"
-    const resetLink = process.env.NODE_ENV === "production" ? `${baseUrl}/reset/${token}` : `http://localhost:5173/reset/${token}`;
 
-    // setup transporter
+    // Save the reset token and expiry time to the user's document
+    userExists.resetPasswordToken = token;
+    userExists.resetPasswordExpires = Date.now() + 3600000;  // 1 hour expiry
+    await userExists.save();
+
+    const baseUrl = "https://chatting-system-fvfc.onrender.com";
+    const resetLink = process.env.NODE_ENV === "production" 
+      ? `${baseUrl}/reset/${token}` 
+      : `http://localhost:5173/reset/${token}`;
+
+    // Setup transporter for sending email
     const transporter = nodemailer.createTransport({
-      service: "Gmail", // or your SMTP provider
+      service: "Gmail",
       auth: {
         user: process.env.EMAIL_USER,  // Your Gmail address
         pass: process.env.EMAIL_PASS,  // Your Gmail app password
       },
     });
 
-    // email options
+    // Email options
     const mailOptions = {
-      from: 'Friends App ',
+      from: 'Friends App',
       to: email,
       subject: "Reset Your Password",
       html: `
@@ -273,10 +348,10 @@ export const forget = async (req, res, next) => {
       `,
     };
 
-    // send email
+    // Send reset link email
     await transporter.sendMail(mailOptions);
 
-    // success response
+    // Success response
     res.status(200).json({
       success: true,
       message: "Reset link sent to your email",
@@ -285,57 +360,46 @@ export const forget = async (req, res, next) => {
     console.log(error);
     next(new AppError(error.message || "internal server error!", 500));
   }
-}
+};
+
+
 export const reset = async (req, res, next) => {
   try {
     const { token } = req.params;
     const { password } = req.body;
-    // check if token is valid
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded) {
-      return next(new AppError("Invalid token", 400));
-    }
-    // check if token is used
-    const usedToken = await UsedToken.findOne({ token });
-    if (!usedToken) {
-      return next(new AppError("Token is not valid", 400));
-    }
-    if (!usedToken) {
-      return next(new AppError("Token is not valid", 400));
-    }
-    
-    
 
-    // check if user exists
-    const userExists = await User.findById(decoded.userId);
-    // check if user won't exist
-    if (!userExists) {
-      return next(new AppError("User not found", 400));
+    // Find user by reset password token and check if it's still valid
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },  // Check if the token has not expired
+    });
+
+    if (!user) {
+      return next(new AppError("Invalid or expired token", 400));
     }
-    // hash password
+
+    // Hash the new password
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(password, salt);
-    // update user
-    const updatedInfo = await User.findByIdAndUpdate(
-      decoded.userId,
-      {
-        password: hashedPassword,
-      },
-      { new: true }
-    );
-    // exclude password from user object
-    const { password: excludedPassword, ...userInfo } = updatedInfo._doc;
-    // generate token
-    const newToken = generateToken(userExists._id, "1h");
-    // delete used token
-    await UsedToken.findByIdAndDelete(usedToken._id);
-    // send token in cookie
 
+    // Update user's password
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;  // Remove the reset token
+    user.resetPasswordExpires = undefined;  // Remove the expiry time
+    await user.save();
+
+    // Exclude password from response
+    const { password: excludedPassword, ...userInfo } = user._doc;
+
+    // Generate new JWT token after password reset
+    const newToken = generateToken(user._id, "1h");
+
+    // Send the new token in the response
     res
       .cookie("token", newToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,  // 1 week expiry for the cookie
         samesite: "strict",
       })
       .status(200)

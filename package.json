@@ -10,7 +10,8 @@
     "client": "cd client && npm run dev",
     "server": "nodemon server/src/index.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "import:data": "node server/seeds/user.seed.js"
+    "import:data": "node server/seeds/user.seed.js import",
+    "destroy:data": "node server/seeds/user.seed.js destroy"
   },
   "author": "tamirat kebede",
   "license": "ISC",

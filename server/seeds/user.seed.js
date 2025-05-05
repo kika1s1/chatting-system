@@ -98,10 +98,10 @@ const seedUsers = [
   }
 ]
 
-
+connectDB();
 const seedDatabase = async () => {
   try {
-    await connectDB();
+    
 
     // Hash each user's password before inserting into the database
     const hashedUsers = await Promise.all(
@@ -125,6 +125,22 @@ const seedDatabase = async () => {
   }
 };
 
-// Call the function
-seedDatabase();
-console.log("Seeding in progress...");
+
+// arg import:data
+
+// arg destroy:data
+if (process.argv[2] === "destroy") {
+  console.log("Deleting all data...");
+  await User.deleteMany({});
+  console.log("All data deleted successfully");
+  process.exit(0);
+}
+// arg import:data
+if (process.argv[2] === "import") {
+  console.log("Importing data...");
+  await seedDatabase();
+  console.log("Data imported successfully");
+  process.exit(0);
+}
+
+
