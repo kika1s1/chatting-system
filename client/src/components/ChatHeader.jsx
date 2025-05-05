@@ -35,7 +35,7 @@ const ChatHeader = () => {
                       : "bg-zinc-400"
                   }`}
                 />
-                {getLastSeen(selectedUser)}
+                {onlineUsers.includes(selectedUser._id) ? "Online" : getLastSeen(selectedUser)}
               </p>
             </div>
         </div>
