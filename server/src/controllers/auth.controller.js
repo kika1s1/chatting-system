@@ -4,6 +4,7 @@ import cloudinary from "../lib/cloudinary.js";
 import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
+import { upsertStreamUser } from "../lib/stream.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -71,6 +72,24 @@ export const signup = async (req, res, next) => {
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = user._doc;
     // send token in cookie
+    
+    try {
+      console.log(user._id.toString())
+      await upsertStreamUser({
+        id: user._id.toString(),
+        name: fullName,
+        email,
+        image: user.profilePic || "",
+      })
+      console.log("Stream user upserted successfully:", user._id.toString());
+  
+    } catch (error) {
+      console.error("Error upserting Stream user:", error);
+      return next(new AppError("Failed to create Stream user", 500));
+      
+    }
+
+
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -172,6 +191,19 @@ export const google = async (req, res, next) => {
     const token = generateToken(user._id, "1h");
     
     const { password: pwd, ...userInfo } = user._doc;
+    // upsert stream user
+    try {
+      await upsertStreamUser({
+        id: user._id.toString(),
+        name: fullName,
+        email,
+        image: profilePic || "",
+      });
+      console.log("Stream user upserted successfully:", user._id.toString());
+    } catch (error) {
+      console.error("Error upserting Stream user:", error);
+      return next(new AppError("Failed to create Stream user", 500));
+    }
     return res
       .cookie("token", token, {
         httpOnly: true,
@@ -270,7 +302,21 @@ export const updateProfile = async (req, res, next) => {
     );
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = updatedUser._doc;
+    // upsert stream user
+    try {
+      await upsertStreamUser({
+        id: updatedUser._id.toString(),
+        name: updatedUser.fullName,
+        email: updatedUser.email,
+        image: uploadResponse.secure_url || userExists.profilePic,
+      });
+      console.log("Stream user upserted successfully:", updatedUser._id.toString());
+    } catch (error) {
+      console.error("Error upserting Stream user:", error);
+      return next(new AppError("Failed to create Stream user", 500));
+    }
     // send token in cookie
+
     res.status(200).json({
       success: true,
       message: "User updated successfully",
