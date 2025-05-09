@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import userRoutes from "./routes/user.route.js";
+import chatRoutes from "./routes/chat.route.js";
 
 import connectDB from "./config/db.js";
 
@@ -41,6 +42,7 @@ app.use(
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/messages", messageRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/chat", chatRoutes)
 
 // ─── PRODUCTION STATIC SERVE ────────────────────────────────────────────────────
 if (process.env.NODE_ENV === "production") {

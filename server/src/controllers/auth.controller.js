@@ -5,6 +5,7 @@ import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
 import { upsertStreamUser } from "../lib/stream.js";
+import sendVerificationEmail from "../lib/send-email.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -34,61 +35,48 @@ export const signup = async (req, res, next) => {
       password: hashedPassword,
     });
     // save user to db
-    await user.save();
     // verify email 
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,  // Your Gmail address
-        pass: process.env.EMAIL_PASS,  // Your Gmail app password
-      },
-    });
-    const baseUrl = "https://chatting-system-fvfc.onrender.com";
+    const token = generateToken(user._id, "1h");
+    user.verificationToken = token;
+    user.verificationTokenExpires = Date.now() + 3600000; // 1 hour expiry
+    await user.save();
+
+
+    const baseUrl = `https://chatting-system-fvfc.onrender.com/verify-email/?token=${token}&email=${encodeURIComponent(user.email)}`;
     const verifyLink = process.env.NODE_ENV === "production" 
 
-      ? `${baseUrl}/verify/${user._id}`
-      : `http://localhost:5173/verify-email/${user._id}`;
-    const mailOptions = {
-      from: 'Friends App',
-      to: email,
-      subject: "Verify Your Email",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;"></div>
-          <h2 style="color: #333;">Verify Your Email</h2>
-          <p style="font-size: 16px;">Thank you for signing up! Please click the button below to verify your email address:</p>
-          <a href="${verifyLink}" style="display: inline-block; margin: 20px 0; padding: 12px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;">Verify Email</a>
-          <p style="font-size: 14px; color: #777;">If you didn't sign up, just ignore this email.</p>
-          <p style="font-size: 14px; color: #777;">This link will expire in 1 hour.</p>
-        </div>
-      `,
-    };
-    // Send verification email
-    await transporter.sendMail(mailOptions);
-    // send verification email
+      ? baseUrl
+      : `http://localhost:5173/verify-email/?token=${token}&email=${encodeURIComponent(user.email)}`;
+    
+    await sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verifyLink
+    );
+ 
     
     
     // generate token
-    const token = generateToken(user._id, "1h");
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = user._doc;
-    // send token in cookie
     
-    try {
-      console.log(user._id.toString())
-      await upsertStreamUser({
-        id: user._id.toString(),
-        name: fullName,
-        email,
-        image: user.profilePic || "",
-      })
-      console.log("Stream user upserted successfully:", user._id.toString());
+    // try {
+    //   console.log(user._id.toString())
+    //   await upsertStreamUser({
+    //     id: user._id.toString(),
+    //     name: fullName,
+    //     email,
+    //     image: user.profilePic || "",
+    //   })
+    //   console.log("Stream user upserted successfully:", user._id.toString());
   
-    } catch (error) {
-      console.error("Error upserting Stream user:", error);
-      return next(new AppError("Failed to create Stream user", 500));
+    // } catch (error) {
+    //   console.error("Error upserting Stream user:", error);
+    //   return next(new AppError("Failed to create Stream user", 500));
       
-    }
+    // }
 
+    // send token in cookie
 
     res
       .cookie("token", token, {
@@ -224,41 +212,45 @@ export const google = async (req, res, next) => {
 
 export const verifyEmail = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    // check if user exists
-    const userExists = await User.findById(id);
-    // check if user won't exist
-    if (!userExists) {
-      return next(new AppError("User not found", 400));
+    const { token, email } = req.query;
+    // Find user by token and email
+    const user = await User.findOne({
+      verificationToken: token,
+      email,
+      verificationTokenExpires: { $gt: Date.now() }, // Check if the token has not expired
+    });
+    if (!user) {
+      return next(new AppError("Invalid or expired token", 400));
     }
-    // check if user is already verified
-    if (userExists.isVerified) {
-      return next(new AppError("User is already verified", 400));
-    }
-    // verify user
-    userExists.isVerified = true;
-    await userExists.save();
-    // exclude password from user object
-    const { password: excludedPassword, ...userInfo } = userExists._doc;
-    // send token in cookie
-    const token = generateToken(userExists._id, "1h");
-    console.log(userExists)
+    // Update user's email verification status
+    user.isVerified = true;
+    user.verificationToken = undefined; // Remove the verification token
+    user.verificationTokenExpires = undefined; // Remove the expiry time
+    await user.save();
+    // Exclude password from response
+    const { password: excludedPassword, ...userInfo } = user._doc;
+    // Generate new JWT token after email verification
+    const newToken = generateToken(user._id, "1h");
+    // Send the new token in the response
     res
-      .cookie("token", token, {
+      .cookie("token", newToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week expiry for the cookie
         samesite: "strict",
       })
       .status(200)
       .json({
         success: true,
-        message: "User verified successfully",
+        message: "Email verified successfully",
         ...userInfo,
       });
-  } catch (error) {
+  }
+  catch (error) {
+    console.log(error);
     next(new AppError(error.message || "internal server error!", 500));
   }
+    
 };
 
 
@@ -459,3 +451,69 @@ export const reset = async (req, res, next) => {
     next(new AppError(error.message || "internal server error!", 500));
   }
 };
+export const sendVerification = async (req, res, next) => {
+  try {
+    const { id } = req.body;
+    // Check if user exists
+    const userExists = await User.findById(id);
+    if (!userExists) {
+      return next(new AppError("User not found", 400));
+    }
+
+    // Generate token for email verification (valid for 1 hour)
+    const token = generateToken(userExists._id, "1h");
+    // Save the verification token to the user's document
+    userExists.verificationToken = token;
+    userExists.verificationTokenExpires = Date.now() + 3600000; // 1 hour expiry
+    await userExists.save();
+    const baseUrl = `https://chatting-system-fvfc.onrender.com/verify-email/?token=${token}&email=${encodeURIComponent(userExists.email)}`;
+    const verifyLink =
+      process.env.NODE_ENV === "production"
+        ? baseUrl
+        : `http://localhost:5173/verify-email/?token=${token}&email=${encodeURIComponent(
+            userExists.email
+          )}`;
+    await sendVerificationEmail(
+      userExists.email,
+      userExists.fullName,
+      verifyLink
+    );
+
+        res.status(200).json({
+          success: true,
+          message: "Verification email sent successfully",
+        });
+      } catch (error) {
+        next(new AppError(error.message || "internal server error!", 500));
+      }
+    };
+
+
+
+export const deleteAccount = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+
+    // Check if user exists
+    const userExists = await User.findById(req.user._id);
+    if (!userExists) {
+      return next(new AppError("User not found", 400));
+    }
+
+    // Check if password is correct
+    const isPasswordCorrect = bcrypt.compareSync(password, userExists.password);
+    if (!isPasswordCorrect) {
+      return next(new AppError("Wrong password", 400));
+    }
+
+    // Delete user account
+    await User.findByIdAndDelete(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    next(new AppError(error.message || "internal server error!", 500));
+  }
+}

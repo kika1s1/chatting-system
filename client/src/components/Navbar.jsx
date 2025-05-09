@@ -3,7 +3,9 @@ import { useAuthStore } from "../store/useAuthStore";
 import { LogOut, MessageSquare, Settings, User } from "lucide-react";
 
 const Navbar = () => {
-  const { logout, authUser } = useAuthStore();
+  const { logout, authUser,sendVerification } = useAuthStore();
+  console.log(authUser)
+
 
   return (
     <header
@@ -49,6 +51,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
+      {(authUser && !authUser?.isVerified) && (<p className="flex justify-center items-center text-red-500 mb-3 cursor-pointer" onClick={()=>sendVerification({id:authUser._id})}>Please verify your account!</p>) }
     </header>
   );
 };

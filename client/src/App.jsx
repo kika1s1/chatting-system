@@ -14,6 +14,7 @@ import Reset from "./pages/Reset";
 import Forget from "./pages/Forget";
 import { User } from "./pages/User";
 import VerifyEmail from "./pages/VerifyEmail";
+import Call from "./pages/Call";
 const App = () => {
   const {authUser, checkAuth, isCheckingAuth} = useAuthStore();
   const { theme } = useThemeStore();
@@ -40,9 +41,8 @@ const App = () => {
         <Route path="/forget-password" element={!authUser ? <Forget/>:<Navigate to="/"/>}  />
         <Route path="/reset/:token" element={!authUser ? <Reset/>:<Navigate to="/"/>}  />
         <Route path="/profile/:id" element={authUser ? <User/>:<Navigate to="/"/>}  />
-        <Route path="/verify-email/:id" element={<VerifyEmail />} />
-
-        {/* <Route path="/posts/:id" element={<Post />} /> */}
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/call/:id" element={authUser? <Call />:<Navigate to="/login"/>} />
         {/* <Route path="/messages" element={<Messages />} /> */}
         {/* <Route path="/notifications" element={<Notifications />} /> */}
         {/* <Route path="/search" element={<Search />} /> */}

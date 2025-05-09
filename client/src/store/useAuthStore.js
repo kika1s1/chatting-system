@@ -87,9 +87,9 @@ export const useAuthStore = create((set, get) => ({
       set({ isLoggingIn: false });
     }
   },
-  verifyEmail: async (id) => {
+  verifyEmail: async (query) => {
     try {
-      const res = await axiosInstance.get(`/auth/verify-email/${id}`);
+      const res = await axiosInstance.get(`/auth/verify-email?${query}`);
       if (res.status === 200) {
         toast.success("Email verified successfully!");
 
@@ -103,6 +103,18 @@ export const useAuthStore = create((set, get) => ({
       toast.error(error.response.data.message);
     }
   },
+  sendVerification: async (data) => {
+    try {
+      const res = await axiosInstance.post("/auth/send-verification", data);
+      if (res.status === 200) {
+        toast.success("Verification email sent!");
+      }
+    } catch (error) {
+      console.error("Error sending verification email:", error.response.data.message);
+      toast.error(error.response.data.message);
+    }
+  },
+
   logout: async () => {
     try {
       const res = await axiosInstance.post("/auth/logout");

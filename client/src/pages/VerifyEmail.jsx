@@ -1,14 +1,16 @@
-import { useParams } from "react-router";
+import {  useSearchParams } from "react-router";
 import { useAuthStore } from "../store/useAuthStore";
 import { useEffect } from "react";
 
 const VerifyEmail = () => {
-    const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
     const { verifyEmail } = useAuthStore();
 
     useEffect(() => {
         const handleVerifyEmail = async () => {
-            await verifyEmail(id);
+            await verifyEmail(`token=${token}&email=${email}`);
             // add delay
             setTimeout(() => {
                 window.location.href = "/login";
@@ -20,7 +22,7 @@ const VerifyEmail = () => {
         return () => {
             // Any necessary cleanup can be done here
         };
-    }, [verifyEmail, id]);
+    }, [verifyEmail, token, email]);
 
     return (
         <div className="min-h-screen flex flex-col justify-center items-center">
