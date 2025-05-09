@@ -173,6 +173,7 @@ export const google = async (req, res, next) => {
       email,
       password: hashedPassword,
       profilePic,
+      isVerified: true,
     });
     await user.save();
     // generate token
@@ -180,18 +181,18 @@ export const google = async (req, res, next) => {
     
     const { password: pwd, ...userInfo } = user._doc;
     // upsert stream user
-    try {
-      await upsertStreamUser({
-        id: user._id.toString(),
-        name: fullName,
-        email,
-        image: profilePic || "",
-      });
-      console.log("Stream user upserted successfully:", user._id.toString());
-    } catch (error) {
-      console.error("Error upserting Stream user:", error);
-      return next(new AppError("Failed to create Stream user", 500));
-    }
+    // try {
+    //   await upsertStreamUser({
+    //     id: user._id.toString(),
+    //     name: fullName,
+    //     email,
+    //     image: profilePic || "",
+    //   });
+    //   console.log("Stream user upserted successfully:", user._id.toString());
+    // } catch (error) {
+    //   console.error("Error upserting Stream user:", error);
+    //   return next(new AppError("Failed to create Stream user", 500));
+    // }
     return res
       .cookie("token", token, {
         httpOnly: true,
