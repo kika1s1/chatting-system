@@ -1,8 +1,8 @@
 # Friends Chat App
 
-**A modern, real‑time, one‑to‑one chat application featuring robust message management, secure authentication, user profiles, and dynamic theming.**
+**A modern, real‑time, one‑to‑one chat application featuring robust message management, secure authentication, user profiles, dynamic theming, and integrated video calling.**
 
-This project delivers a comprehensive chat solution, enabling users to connect and communicate seamlessly with features like typing indicators, read receipts, and image sharing, all built upon a scalable and secure backend.
+This project delivers a comprehensive chat solution, enabling users to connect and communicate seamlessly with features like typing indicators, read receipts, image sharing, and video calls, all built upon a scalable and secure backend.
 
 ---
 
@@ -11,6 +11,7 @@ This project delivers a comprehensive chat solution, enabling users to connect a
 -   **Real‑time Chat Engine:**
     -   Instant one‑to‑one messaging powered by Socket.IO.
     -   Live typing indicators and message read/seen receipts for an engaging user experience.
+    -   Integrated video call functionality for face-to-face communication.
 -   **Comprehensive Message Management:**
     -   Send text and image messages effortlessly.
     -   Full CRUD (Create, Read, Update, Delete) capabilities for messages.
