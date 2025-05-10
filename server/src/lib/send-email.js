@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const sendVerificationEmail = async (to, name, verificationUrl) => {
+const sendEmail = async (to, name, verificationUrl, subject, buttonText, message, title) => {
     const transporter = nodemailer.createTransport({
         service: "Gmail",
         auth: {
@@ -16,19 +16,19 @@ const sendVerificationEmail = async (to, name, verificationUrl) => {
   const templatePath = path.join(__dirname, '..', 'views', 'email.ejs');
 
   // Compile EJS template with data
-  const html = await ejs.renderFile(templatePath, { name, verificationUrl });
+  const html = await ejs.renderFile(templatePath, { name, verificationUrl, subject, buttonText, message, title });
 
   // Email options
   const mailOptions = {
     from: 'Friends',
     to,
-    subject: 'Please verify your email',
+    subject,
     html,
   };
 
   // Send email
   await transporter.sendMail(mailOptions);
-  console.log(`Verification email sent to ${to}`);
+  console.log(`${subject} ${to}`);
 };
 
-export default sendVerificationEmail;
+export default sendEmail;

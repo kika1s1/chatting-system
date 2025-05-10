@@ -5,7 +5,7 @@ import User from "../models/user.model.js";
 import AppError from "../lib/AppError.js";
 import generateToken from "../lib/generateToken.js";
 import { upsertStreamUser } from "../lib/stream.js";
-import sendVerificationEmail from "../lib/send-email.js";
+import sendEmail from "../lib/send-email.js";
 
 export const signup = async (req, res, next) => {
   try {
@@ -48,10 +48,14 @@ export const signup = async (req, res, next) => {
       ? baseUrl
       : `http://localhost:5173/verify-email/?token=${token}&email=${encodeURIComponent(user.email)}`;
     
-    await sendVerificationEmail(
+    await sendEmail(
       user.email,
       user.fullName,
-      verifyLink
+      verifyLink,
+      "Verify your email address",
+      "Verify Email",
+      "Please verify your email address to complete the registration process.",
+      "Complete Email Verification"
     );
  
     
@@ -362,33 +366,16 @@ export const forget = async (req, res, next) => {
       ? `${baseUrl}/reset/${token}` 
       : `http://localhost:5173/reset/${token}`;
 
-    // Setup transporter for sending email
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,  // Your Gmail address
-        pass: process.env.EMAIL_PASS,  // Your Gmail app password
-      },
-    });
-
-    // Email options
-    const mailOptions = {
-      from: 'Friends App',
-      to: email,
-      subject: "Reset Your Password",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-          <h2 style="color: #333;">Reset Your Password</h2>
-          <p style="font-size: 16px;">Forgot your password? No worries. Click the button below to reset it:</p>
-          <a href="${resetLink}" style="display: inline-block; margin: 20px 0; padding: 12px 20px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-size: 16px;">Reset Password</a>
-          <p style="font-size: 14px; color: #777;">If you didn't request a password reset, just ignore this email.</p>
-          <p style="font-size: 14px; color: #777;">This link will expire in 1 hour.</p>
-        </div>
-      `,
-    };
-
-    // Send reset link email
-    await transporter.sendMail(mailOptions);
+      // send email with reset link
+    await sendEmail(
+      userExists.email,
+      userExists.fullName,
+      resetLink,
+      "Reset your password",
+      "Reset Password",
+      "Click the button below to reset your password.",
+      "Password Reset Request"
+    );
 
     // Success response
     res.status(200).json({
@@ -474,10 +461,14 @@ export const sendVerification = async (req, res, next) => {
         : `http://localhost:5173/verify-email/?token=${token}&email=${encodeURIComponent(
             userExists.email
           )}`;
-    await sendVerificationEmail(
+    await sendEmail(
       userExists.email,
       userExists.fullName,
-      verifyLink
+      verifyLink,
+      "Verify your email address",
+      "Verify Email",
+      "Please verify your email address to complete the registration process.",
+      "Email Verification"
     );
 
         res.status(200).json({
