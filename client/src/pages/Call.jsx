@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Navigate } from "react-router";
 import {
-  StreamVideo,
+  StreamVideoProvider,
   StreamVideoClient,
   StreamCall,
   CallControls,
@@ -20,83 +20,74 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 
 const Call = () => {
   const { id: callId } = useParams();
+  const navigate = useNavigate();
+  const { authUser } = useAuthStore();
+
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
-  const [token, setToken] = useState(null);
 
-  const { authUser } = useAuthStore();
-  const navigate = useNavigate();
-
-  // fetch stream token once user is available
+  // 1) Fetch token and initialize call
   useEffect(() => {
     if (!authUser) return;
+
+    let isMounted = true;
     (async () => {
       try {
         const { token } = await getStreamToken();
-        setToken(token);
-      } catch (err) {
-        console.error("Token fetch error:", err);
-        toast.error("Unable to retrieve call token.");
-      }
-    })();
-  }, [authUser]);
+        if (!isMounted) return;
 
-  // initialize video call once token is ready
-  useEffect(() => {
-    console.log(authUser)
-    console.log(callId)
-    console.log(token)
-    if (!token || !authUser?._id || !callId) return;
-    let videoClient, callInstance;
-    const initCall = async () => {
-      try {
-        const user = {
-          id: authUser._id,
-          name: authUser.fullName,
-          image: authUser.profilePic,
-        };
-        videoClient = new StreamVideoClient({
+        // 2) Initialize video client & join call
+        const videoClient = new StreamVideoClient({
           apiKey: STREAM_API_KEY,
-          user,
+          user: {
+            id: authUser._id,
+            name: authUser.fullName,
+            image: authUser.profilePic,
+          },
           token,
         });
-        callInstance = videoClient.call("default", callId);
+
+        const callInstance = videoClient.call("default", callId);
         await callInstance.join({ create: true });
+
+        if (!isMounted) {
+          // If unmounted while joining, immediately clean up
+          await callInstance.leave();
+          // Try calling `client.stop()` instead of `disconnect()`
+          videoClient.stop();  // Assuming this method is available for cleanup
+          return;
+        }
+
         setClient(videoClient);
         setCall(callInstance);
       } catch (err) {
         console.error("Error joining call:", err);
         toast.error("Could not join the call. Please try again.");
       } finally {
-        setIsConnecting(false);
+        if (isMounted) setIsConnecting(false);
       }
-    };
+    })();
+  }, [authUser, callId]);
 
-    initCall();
-
-    return () => {
-      callInstance?.leave();
-      videoClient?.disconnect();
-    };
-  }, [token, authUser?._id, authUser?.fullName, authUser?.profilePic, callId]);
-  console.log(isConnecting)
   if (isConnecting) return <Loader />;
 
+  if (!client || !call) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-black text-white">
+        <p>Could not initialize call.</p>
+        <p>Please refresh or try again later.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex items-center justify-center bg-black">
-      {client && call ? (
-        <StreamVideo client={client}>
-          <StreamCall call={call}>
-            <CallContent navigate={navigate} />
-          </StreamCall>
-        </StreamVideo>
-      ) : (
-        <div className="text-center text-white">
-          <p>Could not initialize call.</p>
-          <p>Please refresh or try again later.</p>
-        </div>
-      )}
+    <div className="h-screen bg-black">
+      <StreamVideoProvider client={client}>
+        <StreamCall call={call}>
+          <CallContent navigate={navigate} />
+        </StreamCall>
+      </StreamVideoProvider>
     </div>
   );
 };

@@ -64,21 +64,21 @@ export const signup = async (req, res, next) => {
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = user._doc;
     
-    // try {
-    //   console.log(user._id.toString())
-    //   await upsertStreamUser({
-    //     id: user._id.toString(),
-    //     name: fullName,
-    //     email,
-    //     image: user.profilePic || "",
-    //   })
-    //   console.log("Stream user upserted successfully:", user._id.toString());
+    try {
+      console.log(user._id.toString())
+      await upsertStreamUser({
+        id: user._id.toString(),
+        name: fullName,
+        email,
+        image: user.profilePic || "",
+      })
+      console.log("Stream user upserted successfully:", user._id.toString());
   
-    // } catch (error) {
-    //   console.error("Error upserting Stream user:", error);
-    //   return next(new AppError("Failed to create Stream user", 500));
+    } catch (error) {
+      console.error("Error upserting Stream user:", error);
+      return next(new AppError("Failed to create Stream user", 500));
       
-    // }
+    }
 
     // send token in cookie
 
@@ -123,7 +123,6 @@ export const login = async (req, res, next) => {
     // exclude password from user object
     const { password: excludedPassword, ...userInfo } = userExists._doc;
     // send token in cookie
-    console.log(userInfo)
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -184,19 +183,19 @@ export const google = async (req, res, next) => {
     const token = generateToken(user._id, "1h");
     
     const { password: pwd, ...userInfo } = user._doc;
-    // upsert stream user
-    // try {
-    //   await upsertStreamUser({
-    //     id: user._id.toString(),
-    //     name: fullName,
-    //     email,
-    //     image: profilePic || "",
-    //   });
-    //   console.log("Stream user upserted successfully:", user._id.toString());
-    // } catch (error) {
-    //   console.error("Error upserting Stream user:", error);
-    //   return next(new AppError("Failed to create Stream user", 500));
-    // }
+    // awat upsertstream user
+    try {
+      await upsertStreamUser({
+        id: user._id.toString(),
+        name: fullName,
+        email,
+        image: profilePic || "",
+      });
+      console.log("Stream user upserted successfully:", user._id.toString());
+    } catch (error) {
+      console.error("Error upserting Stream user:", error);
+      return next(new AppError("Failed to create Stream user", 500));
+    }
     return res
       .cookie("token", token, {
         httpOnly: true,
