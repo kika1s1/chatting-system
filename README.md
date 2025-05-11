@@ -1,4 +1,4 @@
-# Friends Chat App
+# Friends
 
 **A modern, real‑time, one‑to‑one chat application featuring robust message management, secure authentication, user profiles, dynamic theming, and integrated video calling.**
 
