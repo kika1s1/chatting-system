@@ -12,7 +12,7 @@ const ChatHeader = () => {
     <div className="p-7 border-b border-base-300">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {/* Avatar */}
+          {/* /* Avatar */ }
           <Link to={`/profile/${selectedUser._id}`} className="avatar">
             <div className="avatar">
               <div className="size-10 rounded-full relative">
@@ -20,21 +20,19 @@ const ChatHeader = () => {
                   src={selectedUser.profilePic}
                   alt={selectedUser.fullName}
                 />
+                {onlineUsers.includes(selectedUser._id) ? (
+                  <span className="absolute bottom-1 right-2 size-2 bg-green-500 rounded-full ring-2 z-50 ring-white" />
+                ) : (
+                  <span className="absolute bottom-1 right-2 size-2 bg-zinc-400 rounded-full ring-2 ring-white" />
+                )}
               </div>
             </div>
           </Link>
 
-          {/* User info */}
+          {/* /* User info */} 
           <div>
-            <h3 className="text-sm hidden sm:block font-medium">{selectedUser.fullName}</h3>
+            <h3 className="text-sm  font-medium">{selectedUser.fullName.split(" ")[0]}</h3>
             <p className="flex items-center gap-2 text-sm text-base-content/70">
-              <span
-                className={`w-2.5 h-2.5 rounded-full ${
-                  onlineUsers.includes(selectedUser._id)
-                    ? "bg-green-500"
-                    : "bg-zinc-400"
-                }`}
-              />
               {onlineUsers.includes(selectedUser._id)
                 ? "Online"
                 : <span className="text-xs hidden sm:inline font-light">{getLastSeen(selectedUser)}</span>}
