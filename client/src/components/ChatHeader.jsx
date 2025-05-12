@@ -26,7 +26,7 @@ const ChatHeader = () => {
 
           {/* User info */}
           <div>
-            <h3 className="font-medium">{selectedUser.fullName}</h3>
+            <h3 className="text-sm hidden sm:block font-medium">{selectedUser.fullName}</h3>
             <p className="flex items-center gap-2 text-sm text-base-content/70">
               <span
                 className={`w-2.5 h-2.5 rounded-full ${
@@ -37,24 +37,27 @@ const ChatHeader = () => {
               />
               {onlineUsers.includes(selectedUser._id)
                 ? "Online"
-                : getLastSeen(selectedUser)}
+                : <span className="text-xs hidden sm:inline font-light">{getLastSeen(selectedUser)}</span>}
             </p>
           </div>
         </div>
         {/* Call button */}
-        <div className=" flex justify-center gap-10 ">
+        <div className=" flex justify-center gap-3 sm:gap-5 md:gap-10 lg:gap-10">
           <Link
             to={`/call/${selectedUser._id}`}
             className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition duration-200 cursor-pointer mx-auto "
           >
-            <Video className="w-5 h-5" />
+            <Video className="lg:w-5 lg:h-5 md:w-4 md:h-4 w-2 h-2" />
           </Link>
-          
-        {/* Close button */}
+          {/* Close button */}
         <button onClick={() => setSelectedUser(null)}>
           <X />
         </button>
+          
+        
         </div>
+        
+        
 
         
       </div>
