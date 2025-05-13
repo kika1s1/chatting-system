@@ -5,8 +5,29 @@ import { useChatStore } from "../store/useChatStore";
 import getLastSeen from "../lib/lastSeen";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser } = useChatStore();
+  const { selectedUser, setSelectedUser, sendMessage } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const { authUser } = useAuthStore();
+  const sendVideoCall = (id) => {
+  const videoLink = `
+    <a 
+      href="http://localhost:5173/call/${id}" 
+      rel="noopener noreferrer"
+      class="inline-block px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition duration-200"
+    >
+      📹 Join Video Call
+    </a>
+  `;
+
+  const text = `
+    ${videoLink}<br/>
+    I am calling you on video. Join me here.
+  `;
+
+  const image = "";
+  sendMessage({ text, image });
+};
+
 
   return (
     <div className="p-7 border-b border-base-300">
@@ -41,12 +62,13 @@ const ChatHeader = () => {
         </div>
         {/* Call button */}
         <div className=" flex justify-center gap-3 sm:gap-5 md:gap-10 lg:gap-10">
-          <Link
-            to={`/call/${selectedUser._id}`}
+          <button
+            onClick={()=> sendVideoCall(authUser._id)}
+            
             className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-lg transition duration-200 cursor-pointer mx-auto "
           >
             <Video className="lg:w-5 lg:h-5 md:w-4 md:h-4 w-2 h-2" />
-          </Link>
+          </button>
           {/* Close button */}
         <button onClick={() => setSelectedUser(null)}>
           <X />

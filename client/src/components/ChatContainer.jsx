@@ -148,7 +148,7 @@ const ChatContainer = () => {
                     />
                   )}
                   <div className="flex items-baseline space-x-2">
-                    <p className="break-words">{msg.text}</p>
+                    <p className="break-words" dangerouslySetInnerHTML={{ __html: msg.text }} />
                     {new Date(msg.updatedAt) > new Date(msg.createdAt) && (
                       <span className="text-xs italic text-slate-500">Edited</span>
                     )}
