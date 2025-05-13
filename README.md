@@ -37,6 +37,30 @@ This project delivers a comprehensive chat solution, enabling users to connect a
     -   Cloudinary integration for efficient image uploads and management.
 
 ---
+### 🗨️ Chat Interface
+
+![Chat Screenshot](./screenshots/chat-interface.png)
+
+### 🎥 Video Call Interface
+
+![Video Call Screenshot](./screenshots/video-call.png)
+
+### 🔐 Authentication
+
+![Login Page](./screenshots/login.png)
+![Signup Page](./screenshots/signup.png)
+
+### 👤 User Profile
+
+![Profile Screenshot](./screenshots/profile.png)
+
+### 🌓 Theme Customization
+
+![Dark Mode](./screenshots/darkmode.png)
+
+
+
+
 
 ## 🛠 Tech Stack
 
